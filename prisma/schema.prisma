@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model EmployeeLogin {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique(map: "email") @db.VarChar(50)
+  password   String    @db.VarChar(255)
+  ip_address String?   @db.VarChar(50)
+  pin_active String?   @db.VarChar(50)
+  pin_reset  String?   @db.VarChar(50)
+  is_active  Int       @default(0) @db.SmallInt
+  is_delete  Int       @default(0) @db.SmallInt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  employee   Employee?
+
+  @@map("employees_login")
+}
+
+model Employee {
+  id            Int           @id @default(autoincrement())
+  id_login      Int           @unique
+  fullname      String        @db.VarChar(50)
+  phone_number  String        @db.VarChar(50)
+  address       String        @db.VarChar(255)
+  id_department Int
+  id_division   Int
+  hire_date     DateTime
+  is_active     Int           @default(0) @db.SmallInt
+  is_delete     Int           @default(0) @db.SmallInt
+  created_at    DateTime      @default(now())
+  updated_at    DateTime      @updatedAt
+  department    Department    @relation(fields: [id_department], references: [id], onDelete: NoAction)
+  division      Division      @relation(fields: [id_division], references: [id], onDelete: NoAction)
+  login         EmployeeLogin @relation(fields: [id_login], references: [id], onDelete: NoAction)
+
+  @@index([id_department], map: "employees_id_department_fkey")
+  @@index([id_division], map: "employees_id_division_fkey")
+  @@map("employees")
+}
+
+model Department {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique @db.VarChar(50)
+  description String?    @db.VarChar(255)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  employees   Employee[]
+
+  @@map("departments")
+}
+
+model Division {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique @db.VarChar(50)
+  description String?    @db.VarChar(255)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  employees   Employee[]
+
+  @@map("divisions")
+}
